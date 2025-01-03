@@ -18,26 +18,8 @@ import "./style.css";
 import "./App.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 
-// Function to load Google Analytics script
-const loadGA = () => {
-  const script = document.createElement("script");
-  script.src = "https://www.googletagmanager.com/gtag/js?id=G-CX0FF52L17";
-  script.async = true;
-  document.head.appendChild(script);
-
-  script.onload = () => {
-    window.dataLayer = window.dataLayer || [];
-    function gtag() {
-      window.dataLayer.push(arguments);
-    }
-    window.gtag = gtag;
-    gtag("js", new Date());
-    gtag("config", "G-CX0FF52L17");
-  };
-};
-
-// Custom hook to track page views
-const useGoogleAnalytics = () => {
+// Custom hook to track page views in Google Analytics
+const usePageTracking = () => {
   const location = useLocation();
 
   useEffect(() => {
@@ -53,12 +35,6 @@ function App() {
   const [load, upadateLoad] = useState(true);
 
   useEffect(() => {
-
-    // Load Google Analytics script only in production environment
-    if (process.env.NODE_ENV === "production") {
-      loadGA();
-    }
-
     const timer = setTimeout(() => {
       upadateLoad(false);
     }, 1200);
@@ -66,10 +42,10 @@ function App() {
     return () => clearTimeout(timer);
   }, []);
 
-  useGoogleAnalytics(); // Call the custom hook to track page views
 
   return (
     <Router>
+      <PageTrackerWrapper>
       <Preloader load={load} />
       <div className="App" id={load ? "no-scroll" : "scroll"}>
         <Navbar />
@@ -83,8 +59,16 @@ function App() {
         </Routes>
         <Footer />
       </div>
+      </PageTrackerWrapper>
     </Router>
   );
 }
 
+// Wrapper component to use page tracking
+const PageTrackerWrapper = ({ children }) => {
+  usePageTracking(); // Use the custom hook here, inside the Router context
+  return children;
+};
+
 export default App;
+
