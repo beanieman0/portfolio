@@ -10,23 +10,63 @@ import {
   BrowserRouter as Router,
   Route,
   Routes,
-  Navigate
+  Navigate,
+  useLocation
 } from "react-router-dom";
 import ScrollToTop from "./components/ScrollToTop";
 import "./style.css";
 import "./App.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 
+// Function to load Google Analytics script
+const loadGA = () => {
+  const script = document.createElement("script");
+  script.src = "https://www.googletagmanager.com/gtag/js?id=G-CX0FF52L17";
+  script.async = true;
+  document.head.appendChild(script);
+
+  script.onload = () => {
+    window.dataLayer = window.dataLayer || [];
+    function gtag() {
+      window.dataLayer.push(arguments);
+    }
+    window.gtag = gtag;
+    gtag("js", new Date());
+    gtag("config", "G-CX0FF52L17");
+  };
+};
+
+// Custom hook to track page views
+const useGoogleAnalytics = () => {
+  const location = useLocation();
+
+  useEffect(() => {
+    if (window.gtag) {
+      window.gtag("config", "G-CX0FF52L17", {
+        page_path: location.pathname,
+      });
+    }
+  }, [location]);
+};
+
 function App() {
   const [load, upadateLoad] = useState(true);
 
   useEffect(() => {
+
+    // Load Google Analytics script only in production environment
+    if (process.env.NODE_ENV === "production") {
+      loadGA();
+    }
+
     const timer = setTimeout(() => {
       upadateLoad(false);
     }, 1200);
 
     return () => clearTimeout(timer);
   }, []);
+
+  useGoogleAnalytics(); // Call the custom hook to track page views
 
   return (
     <Router>
